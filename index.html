@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Text Editor</title>
+    <link rel="stylesheet" href="css/photon.css">
+
+    <style>
+    .text-default{
+        width: 100%;
+        height: 100%;
+        border: none;
+        outline: none;
+        resize: none;
+        font-size: 20px;
+    }
+    </style>
+</head>
+<body>
+    <div class="window">
+        <header class="toolbar toolbar-header">
+            <div class="toolbar-actions">
+                <div class="btn-group">
+                    <button class="btn btn-default" onclick="increaseFont()">
+                        <span class="icon icon-plus"></span>
+                    </button>
+                    <button class="btn btn-default" onclick="decreaseFont()">
+                        <span class="icon icon-minus"></span>
+                    </button>
+                </div>
+
+                <button class="btn btn-default pull-right" onclick="saveText()">
+                    <span class="icon icon-download icon-text"></span>
+                    Save
+                </button>
+            </div>
+            <div style="text-align: center">
+                <span id="filename"></span>
+            </div>
+        </header>
+
+        <div class="window-content">
+            <textarea name="" id="" class="text-default"></textarea>
+        </div>
+    </div>
+
+    <script>
+    const {ipcRenderer} = require('electron')
+    let textarea = document.querySelector('textarea')
+    defaultFont = 20
+
+    function increaseFont(){
+        textarea.style.fontSize = `${++defaultFont}px`
+    }
+
+    function decreaseFont(){
+        textarea.style.fontSize = `${--defaultFont}px`
+    }
+
+    function saveText(){
+        let text = textarea.value
+        ipcRenderer.send('save', text)
+    }
+
+    ipcRenderer.on('saved', (event, results)=>{
+        if(results.status=='success'){
+            textarea.style.backgroundColor = "#b2ff99" 
+            document.querySelector('#filename').textContent = results.path
+        }else{
+            textarea.style.backgroundColor = "#ff8989"
+        }
+        setTimeout(function(){textarea.style.backgroundColor = ""}, 500);
+    })
+
+    ipcRenderer.on('save-clicked', ()=>{
+        saveText()
+    })
+    </script>
+</body>
+</html>
